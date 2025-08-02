@@ -32,10 +32,12 @@ def count_occurrences(
         left = start + dt.timedelta(days=days_to_this_weekday)
         # left < interval_start | left <= interval_end | left > interval_end
         if left < interval_start:
-            a = ((interval_start - left).days + 1) // (period * 7)
-            b = ((interval_end - left).days + 1) // (period * 7)
+            # how many same weekdays before start
+            a = ((interval_start - left).days - 1) // (period * 7)
+            # how many same weekdays before and including end
+            b = (interval_end - left).days // (period * 7)
             total += b - a
         elif left <= interval_end:
-            total += ((interval_end - left).days + 1) // (period * 7) + 1
+            total += (interval_end - left).days // (period * 7) + 1
 
     return total
