@@ -47,3 +47,33 @@ def test_3():
         )
         == 0
     )
+
+
+def test_4():
+    interval_start = dt.date(2025, 8, 13)
+    interval_end = dt.date(2025, 8, 14)
+
+    start = dt.date(2025, 8, 15)
+    period = 1
+    weekdays = pierre.Weekdays.WED | pierre.Weekdays.THU
+    assert (
+        pierre.count_occurrences(
+            start, weekdays, period, interval_start, interval_end
+        )
+        == 0
+    )
+
+
+def test_5():
+    interval_start = dt.date(2025, 8, 11)
+    interval_end = dt.date(2025, 8, 15)
+
+    start = dt.date(2025, 8, 11)
+    period = 1
+    weekdays = pierre.Weekdays.MON | pierre.Weekdays.WED | pierre.Weekdays.THU
+    assert (
+        pierre.count_occurrences(
+            start, weekdays, period, interval_start, interval_end
+        )
+        == 3
+    )
