@@ -1,2 +1,4 @@
 ipykernel
 pytest
+pandas
+matplotlib

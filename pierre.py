@@ -2,7 +2,9 @@ import datetime as dt
 from enum import Flag, auto
 from dataclasses import dataclass
 from itertools import dropwhile
+import pandas as pd
 import calendar
+from typing import Iterable
 
 
 class Weekdays(Flag):
@@ -53,32 +55,28 @@ class WeeklyRecurringEvent:
     weekdays: Weekdays
     period: int
     duration: float
+    project: str
 
 
 def time_taken(
     event: WeeklyRecurringEvent, interval_start: dt.date, interval_end: dt.date
 ) -> float:
-    return count_occurrences(
-        event.start, event.weekdays, event.period, interval_start, interval_end
+    return (
+        count_occurrences(
+            event.start,
+            event.weekdays,
+            event.period,
+            interval_start,
+            interval_end,
+        )
+        * event.duration
     )
 
 
-def count_workdays():
-    weekday_count = 0
-    cal = calendar.Calendar()
-
-    for week in cal.monthdayscalendar(2013, 8):
-        for i, day in enumerate(week):
-            # not this month's day or a weekend
-            if day == 0 or i >= 5:
-                continue
-            # or some other control if desired...
-            weekday_count += 1
-
-    return weekday_count
-
-
-def count_workdays(current_date: dt.date, month_number: int, year_number: int):
+def count_workdays(
+    current_date: dt.date, month_number: int, year_number: int
+) -> int:
+    """Does not take into account public holidays"""
     weekday_count = 0
     cal = calendar.Calendar()
 
@@ -91,3 +89,68 @@ def count_workdays(current_date: dt.date, month_number: int, year_number: int):
             weekday_count += 1
 
     return weekday_count
+
+
+def count_workdays_and_calculate_pool(
+    year: int, month: int
+) -> tuple[float, float]:
+    workdays_count = count_workdays(dt.date(year, month, 1), month, year)
+    working_time_pool = float(workdays_count * 8)
+    return workdays_count, working_time_pool
+
+
+def calculate_time_taken_by_recurring_events(
+    events: Iterable[WeeklyRecurringEvent],
+    year: int,
+    month: int,
+) -> pd.DataFrame:
+    _, working_time_pool = count_workdays_and_calculate_pool(year, month)
+    last_day = calendar.monthrange(year, month)[1]
+
+    time_taken_df = pd.DataFrame(
+        {
+            "Name": event.name,
+            "Time Taken": time_taken(
+                event, dt.date(year, month, 1), dt.date(year, month, last_day)
+            ),
+        }
+        for event in events
+    )
+    time_taken_df["Pool share"] = time_taken_df["Time Taken"].apply(
+        lambda time: time / working_time_pool
+    )
+
+    return time_taken_df
+
+
+def calculate_time_taken_on_projects_by_recurring_events(
+    time_taken_by_recurring_events: pd.DataFrame, events: pd.DataFrame
+) -> pd.DataFrame:
+    time_taken_with_project_data_df = time_taken_by_recurring_events[
+        ["Name", "Time Taken"]
+    ]
+    time_taken_with_project_data_df["Project"] = events["project"]
+
+    time_taken_on_projects_by_recurring_events_df = (
+        time_taken_with_project_data_df.groupby("Project").sum()
+    ).drop(columns=["Name"])
+
+    return time_taken_on_projects_by_recurring_events_df
+
+
+def split_unallocated_allocated_time_taken_by_recurring_events(
+    project_allocations: dict[str, float], taken_on_projects: pd.DataFrame
+) -> tuple[dict[str, float], float]:
+    unallocated = 0.0
+
+    allocated: dict[str, float] = dict()
+    for row in taken_on_projects.itertuples():
+        if row.Index in project_allocations:
+            allocated = row._1
+        else:
+            unallocated += row._1
+
+    return (
+        allocated,
+        unallocated,
+    )
