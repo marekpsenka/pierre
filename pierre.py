@@ -5,6 +5,9 @@ from itertools import dropwhile
 import pandas as pd
 import calendar
 from typing import Iterable
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
 class Weekdays(Flag):
@@ -154,3 +157,74 @@ def split_unallocated_allocated_time_taken_by_recurring_events(
         allocated,
         unallocated,
     )
+
+
+def plot_working_time_pool_breakdown(
+    working_time_pool: float,
+    project_allocations: dict[str, float],
+    time_taken_by_recurring_events_on_allocated_projects: dict[str, float],
+    time_taken_by_recurring_events_on_unallocated_projects: float,
+) -> tuple[Figure, Axes]:
+    unallocated_capacity = 1.0 - sum(project_allocations.values())
+    labels = []
+    outer = []
+    inner = []
+    tab20c = plt.color_sequences["tab20c"]
+    outer_colors = []
+    inner_colors = []
+    i = 0
+    for key, value in project_allocations.items():
+        labels.append(key)
+        outer.append(working_time_pool * value)
+        outer_colors.append(tab20c[i * 4])
+        inner_colors.append(tab20c[i * 4 + 1])
+        if key in time_taken_by_recurring_events_on_allocated_projects:
+            inner.append(
+                working_time_pool * value
+                - time_taken_by_recurring_events_on_allocated_projects[key]
+            )
+            inner.append(
+                time_taken_by_recurring_events_on_allocated_projects[key]
+            )
+            inner_colors.append(tab20c[-1])
+        else:
+            inner.append(working_time_pool * value)
+        i += 1
+
+    labels.append("Unallocated")
+    outer.append(unallocated_capacity * working_time_pool)
+    outer_colors.append(tab20c[i * 4])
+    inner_colors.append(tab20c[i * 4 + 1])
+    if time_taken_by_recurring_events_on_unallocated_projects > 0.0:
+        inner.append(
+            unallocated_capacity * working_time_pool
+            - time_taken_by_recurring_events_on_unallocated_projects
+        )
+        inner.append(time_taken_by_recurring_events_on_unallocated_projects)
+        inner_colors.append(tab20c[-1])
+    else:
+        inner.append(unallocated_capacity * working_time_pool)
+
+    fig, ax = plt.subplots()
+
+    size = 0.3
+
+    ax.pie(
+        outer,
+        radius=1,
+        colors=outer_colors,
+        wedgeprops=dict(width=size, edgecolor="w"),
+        labels=labels,
+    )
+
+    ax.pie(
+        inner,
+        radius=1 - size,
+        autopct="%1.1f%%",
+        colors=inner_colors,
+        wedgeprops=dict(width=size, edgecolor="w"),
+    )
+
+    ax.set(aspect="equal", title="Working time pool breakdown")
+
+    return fig, ax
