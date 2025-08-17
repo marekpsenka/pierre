@@ -18,7 +18,9 @@ def test_1():
     )
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end)
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
         == 21
     )
 
@@ -33,7 +35,9 @@ def test_2():
     weekdays = Weekdays.MON | Weekdays.WED | Weekdays.FRI
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end)
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
         == 13
     )
 
@@ -48,7 +52,9 @@ def test_3():
     weekdays = Weekdays.MON | Weekdays.WED | Weekdays.FRI
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end)
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
         == 12
     )
 
@@ -63,7 +69,10 @@ def test_4():
     weekdays = Weekdays.THU
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end) == 2
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
+        == 2
     )
 
 
@@ -77,7 +86,10 @@ def test_5():
     weekdays = Weekdays.THU
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end) == 2
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
+        == 2
     )
 
 
@@ -91,7 +103,10 @@ def test_6():
     weekdays = Weekdays.FRI
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end) == 1
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
+        == 1
     )
 
 
@@ -105,7 +120,10 @@ def test_7():
     weekdays = Weekdays.MON
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end) == 2
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
+        == 2
     )
 
 
@@ -119,7 +137,10 @@ def test_8():
     weekdays = Weekdays.FRI
 
     assert (
-        count_occurrences(start, weekdays, period, month_start, month_end) == 3
+        count_occurrences(
+            start, None, weekdays, period, month_start, month_end
+        )
+        == 3
     )
 
 

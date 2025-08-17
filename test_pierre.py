@@ -13,7 +13,7 @@ def test_1():
 
     assert (
         pierre.count_occurrences(
-            start, weekdays, period, month_start, month_end
+            start, None, weekdays, period, month_start, month_end
         )
         == 13
     )
@@ -28,7 +28,7 @@ def test_2():
     weekdays = pierre.Weekdays.TUE | pierre.Weekdays.THU
     assert (
         pierre.count_occurrences(
-            start, weekdays, period, interval_start, interval_end
+            start, None, weekdays, period, interval_start, interval_end
         )
         == 3
     )
@@ -43,7 +43,7 @@ def test_3():
     weekdays = pierre.Weekdays.MON | pierre.Weekdays.FRI
     assert (
         pierre.count_occurrences(
-            start, weekdays, period, interval_start, interval_end
+            start, None, weekdays, period, interval_start, interval_end
         )
         == 0
     )
@@ -58,7 +58,7 @@ def test_4():
     weekdays = pierre.Weekdays.WED | pierre.Weekdays.THU
     assert (
         pierre.count_occurrences(
-            start, weekdays, period, interval_start, interval_end
+            start, None, weekdays, period, interval_start, interval_end
         )
         == 0
     )
@@ -73,7 +73,7 @@ def test_5():
     weekdays = pierre.Weekdays.MON | pierre.Weekdays.WED | pierre.Weekdays.THU
     assert (
         pierre.count_occurrences(
-            start, weekdays, period, interval_start, interval_end
+            start, None, weekdays, period, interval_start, interval_end
         )
         == 3
     )

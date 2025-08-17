@@ -22,6 +22,7 @@ class Weekdays(Flag):
 
 def count_occurrences(
     start: dt.date,
+    end: dt.date | None,
     weekdays: Weekdays,
     period: int,
     interval_start: dt.date,
@@ -38,15 +39,19 @@ def count_occurrences(
             days_to_this_weekday = i - start.weekday()
 
         left = start + dt.timedelta(days=days_to_this_weekday)
-        # left < interval_start | left <= interval_end | left > interval_end
+        if end is not None:
+            right = min(end, interval_end)
+        else:
+            right = interval_end
+        # left < interval_start | left <= right | left > right
         if left < interval_start:
             # how many same weekdays before start
             a = ((interval_start - left).days - 1) // (period * 7)
-            # how many same weekdays before and including end
-            b = (interval_end - left).days // (period * 7)
+            # how many same weekdays before and including right
+            b = (right - left).days // (period * 7)
             total += b - a
-        elif left <= interval_end:
-            total += (interval_end - left).days // (period * 7) + 1
+        elif left <= right:
+            total += (right - left).days // (period * 7) + 1
 
     return total
 
@@ -55,6 +60,7 @@ def count_occurrences(
 class WeeklyRecurringEvent:
     name: str
     start: dt.date
+    end: dt.date | None
     weekdays: Weekdays
     period: int
     duration: float
@@ -67,6 +73,7 @@ def time_taken(
     return (
         count_occurrences(
             event.start,
+            event.end,
             event.weekdays,
             event.period,
             interval_start,
@@ -82,12 +89,19 @@ def count_workdays(
     """Does not take into account public holidays"""
     weekday_count = 0
     cal = calendar.Calendar()
+    last_day_of_month = dt.date(
+        year_number,
+        month_number,
+        calendar.monthrange(year_number, month_number)[1],
+    )
 
     remaining_dates = dropwhile(
         lambda d: d < current_date,
         cal.itermonthdates(year_number, month_number),
     )
     for date in remaining_dates:
+        if date > last_day_of_month:
+            break
         if date.weekday() < 5:
             weekday_count += 1
 
